@@ -3,945 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEKKERBROE - ANGRY TOWN CHAOS GAME!</title>
+    <title>Topdown Driver</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        html, body {
+            margin:0;
+            padding:0;
+            background:#111;
+            color:#fff;
+            font-family:sans-serif;
+            overflow:hidden;
         }
-
-        body {
-            font-family: 'Arial Black', Arial, sans-serif;
-            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f, #4ecdc4);
-            background-size: 400% 400%;
-            animation: gradientShift 2s ease infinite;
-            overflow: hidden;
-            cursor: crosshair;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .title {
-            font-size: clamp(2rem, 8vw, 4rem);
-            color: #fff;
-            text-shadow: 
-                3px 3px 0px #000,
-                6px 6px 0px #ff0000,
-                9px 9px 0px #ffff00;
-            transform: rotate(-5deg);
-            animation: titleShake 0.3s ease-in-out infinite alternate;
-            margin-bottom: 10px;
-            z-index: 10;
-        }
-
-        @keyframes titleShake {
-            0% { transform: rotate(-5deg) translateX(-3px) scale(1); }
-            100% { transform: rotate(-3deg) translateX(3px) scale(1.05); }
-        }
-
-        .game-hud {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .score-display, .combo-display, .timer-display {
-            background: rgba(0,0,0,0.8);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border: 3px solid #FFD93D;
-            animation: hudPulse 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes hudPulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
-        }
-
-        .combo-display.active {
-            background: linear-gradient(45deg, #ff0000, #ffff00, #00ff00);
-            animation: comboFlash 0.5s ease-in-out infinite alternate;
-        }
-
-        @keyframes comboFlash {
-            0% { transform: scale(1.1) rotate(-2deg); }
-            100% { transform: scale(1.2) rotate(2deg); }
-        }
-
         #gameCanvas {
-            border: 8px solid #000;
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 60%, #228B22 60%, #228B22 100%);
-            margin: 10px;
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="%23ff0000" stroke="%23000" stroke-width="3"/><text x="15" y="20" text-anchor="middle" font-size="16" fill="%23fff">💥</text></svg>'), auto;
+            display:block;
+            margin:0 auto;
+            background:#444;
+            border:4px solid #fff;
         }
-
-        .social-links {
-            display: flex;
-            gap: 15px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
+        .hud {
+            position:absolute;
+            top:10px;
+            left:10px;
+            font-size:20px;
         }
-
-        .social-link {
-            display: inline-block;
-            padding: 8px 16px;
-            background: #fff;
-            color: #000;
-            text-decoration: none;
-            border: 4px solid #000;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            box-shadow: 5px 5px 0px #000;
-            animation: socialBounce 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes socialBounce {
-            0% { transform: translateY(0px); }
-            100% { transform: translateY(-5px); }
-        }
-
-        .social-link:hover {
-            transform: translate(-3px, -8px);
-            box-shadow: 8px 8px 0px #000;
-            background: #FFD93D;
-        }
-
-        .social-link.tiktok:hover { background: #000; color: #fff; }
-        .social-link.facebook:hover { background: #1877F2; color: #fff; }
-        .social-link.instagram:hover { background: linear-gradient(45deg, #F58529, #DD2A7B, #8134AF); color: #fff; }
-        .social-link.youtube:hover { background: #FF0000; color: #fff; }
-
-        .instructions {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            animation: pulse 2s ease-in-out infinite;
-            text-align: center;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-
-        .power-up-notification {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #ff00ff);
-            color: #fff;
-            padding: 20px;
-            border-radius: 20px;
-            font-size: 2rem;
-            font-weight: bold;
-            text-shadow: 2px 2px 0px #000;
-            animation: powerUpAnim 2s ease-out forwards;
-            z-index: 1000;
-            pointer-events: none;
-        }
-
-        @keyframes powerUpAnim {
-            0% { 
-                transform: translate(-50%, -50%) scale(0) rotate(0deg); 
-                opacity: 0; 
-            }
-            50% { 
-                transform: translate(-50%, -50%) scale(1.5) rotate(180deg); 
-                opacity: 1; 
-            }
-            100% { 
-                transform: translate(-50%, -50%) scale(1) rotate(360deg); 
-                opacity: 0; 
-            }
-        }
-
-        @media (max-width: 768px) {
-            #gameCanvas {
-                width: 90vw;
-                height: 60vh;
-            }
-            
-            .social-links {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .game-hud {
-                flex-direction: column;
-                align-items: center;
-            }
+        #message {
+            position:absolute;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            font-size:32px;
+            background:rgba(0,0,0,0.7);
+            padding:20px;
+            border-radius:10px;
+            display:none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="title">LEKKERBROE CHAOS GAME!</h1>
-        
-        <div class="game-hud">
-            <div class="score-display">SCORE: <span id="scoreValue">0</span></div>
-            <div class="combo-display" id="comboDisplay">COMBO: <span id="comboValue">0</span>x</div>
-            <div class="timer-display">TIME: <span id="timerValue">60</span>s</div>
-        </div>
-        
-        <canvas id="gameCanvas" width="900" height="500"></canvas>
-        
-        <div class="social-links">
-            <a href="https://www.tiktok.com/@lekkerbroe" class="social-link tiktok" target="_blank">📱 TIKTOK</a>
-            <a href="https://www.facebook.com/lekkersnaaksbroe" class="social-link facebook" target="_blank">👥 FACEBOOK</a>
-            <a href="https://www.instagram.com/lekkerbroe/" class="social-link instagram" target="_blank">📸 INSTAGRAM</a>
-            <a href="https://www.youtube.com/@lekkerbroe" class="social-link youtube" target="_blank">🎥 YOUTUBE</a>
-        </div>
-    </div>
-    
-    <div class="instructions">
-        🎮 Click everything! Catch flying objects! Make chaos! 🎮
-    </div>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<div class="hud">Score: <span id="score">0</span></div>
+<div id="message">Press any key to start</div>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let playing = false;
+let score = 0;
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Game state
-        let animationId;
-        let time = 0;
-        let mouseX = 0;
-        let mouseY = 0;
-        let explosions = [];
-        let particles = [];
-        let flyingObjects = [];
-        let powerUps = [];
-        let score = 0;
-        let combo = 0;
-        let comboTimer = 0;
-        let gameTimer = 60;
-        let gameStartTime = Date.now();
-        let soundEffects = [];
-        let screenShake = 0;
-        let backgroundHue = 0;
-        
-        // Game elements
-        let angryGuy = {
-            x: 450,
-            y: 300,
-            targetX: 450,
-            targetY: 300,
-            size: 60,
-            rotation: 0,
-            expression: '🤬',
-            shoutTimer: 0,
-            bounceOffset: 0,
-            clickable: true,
-            hitPoints: 3,
-            maxHitPoints: 3,
-            powerUpTimer: 0,
-            rage: 0
-        };
+const car = {x:canvas.width/2-15, y:canvas.height-80, w:30, h:50, speed:4, color:'#0f0'};
+const obstacles = [];
+let obstacleTimer = 0;
 
-        // Building data with click interaction
-        const buildings = [
-            {x: 50, y: 200, width: 80, height: 120, color: '#FF6B6B', windows: [], clicked: false, health: 3},
-            {x: 150, y: 180, width: 100, height: 150, color: '#4ECDC4', windows: [], clicked: false, health: 3},
-            {x: 280, y: 220, width: 70, height: 100, color: '#45B7D1', windows: [], clicked: false, health: 3},
-            {x: 380, y: 190, width: 90, height: 130, color: '#96CEB4', windows: [], clicked: false, health: 3},
-            {x: 500, y: 170, width: 110, height: 160, color: '#FFEAA7', windows: [], clicked: false, health: 3},
-            {x: 640, y: 200, width: 85, height: 140, color: '#FF7675', windows: [], clicked: false, health: 3},
-            {x: 750, y: 210, width: 75, height: 110, color: '#A29BFE', windows: [], clicked: false, health: 3}
-        ];
+const keys = {};
+document.addEventListener('keydown', e => {
+    keys[e.key] = true;
+    if(!playing){
+        startGame();
+    }
+});
+document.addEventListener('keyup', e => { keys[e.key] = false; });
 
-        // Initialize building windows
-        buildings.forEach(building => {
-            const windowsPerRow = Math.floor(building.width / 25);
-            const windowRows = Math.floor(building.height / 30);
-            
-            for (let row = 0; row < windowRows; row++) {
-                for (let col = 0; col < windowsPerRow; col++) {
-                    building.windows.push({
-                        x: building.x + 10 + col * 25,
-                        y: building.y + 10 + row * 30,
-                        on: Math.random() > 0.5,
-                        blinkTimer: Math.random() * 100,
-                        clickable: true,
-                        points: 10
-                    });
-                }
-            }
-        });
+function startGame(){
+    document.getElementById('message').style.display='none';
+    playing = true;
+    score = 0;
+    obstacles.length = 0;
+    obstacleTimer = 0;
+    requestAnimationFrame(loop);
+}
 
-        // Clouds with interaction
-        const clouds = [
-            {x: -50, y: 50, width: 80, height: 40, speed: 0.5, clickable: true, points: 25},
-            {x: -100, y: 80, width: 100, height: 50, speed: 0.3, clickable: true, points: 30},
-            {x: -70, y: 30, width: 60, height: 30, speed: 0.7, clickable: true, points: 20},
-            {x: -120, y: 100, width: 90, height: 45, speed: 0.4, clickable: true, points: 25}
-        ];
+function spawnObstacle(){
+    const width = 40 + Math.random()*40;
+    const x = Math.random()*(canvas.width-width);
+    const speed = 2 + Math.random()*3;
+    obstacles.push({x, y:-60, w:width, h:40, speed, color:'#f00'});
+}
 
-        // Game data
-        const angryExpressions = ['🤬', '😡', '😤', '🤯', '👹', '💀', '🔥', '👺', '😠', '🤢', '😵', '🤮', '🥵', '🤡'];
-        const angryPhrases = ['WAAAAH!', 'GRRRR!', 'NOOOO!', 'ARGHHH!', 'RAAAWR!', 'BOOM!', 'CRASH!', 'HULK SMASH!', 'LEKKERBROE!', 'CHAOS!', 'MAYHEM!', 'MADNESS!', 'INSANITY!', 'DESTRUCTION!'];
-        const flyingEmojis = ['🍕', '🍔', '🌮', '🍰', '🎂', '🍪', '🍩', '🧁', '🍎', '🍌', '🍇', '🍓', '🥑', '🥕', '🌽', '🥔', '🍅', '🥒', '🥬', '🥦'];
-        const powerUpEmojis = ['⚡', '💥', '🔥', '✨', '💫', '⭐', '🌟', '💎', '👑', '🏆'];
-        const soundTexts = ['POW!', 'BOOM!', 'CRASH!', 'BANG!', 'SMASH!', 'WHACK!', 'THUD!', 'KAPOW!', 'WHAM!', 'ZAP!'];
+function update(){
+    // move car
+    if(keys['ArrowLeft']) car.x -= car.speed;
+    if(keys['ArrowRight']) car.x += car.speed;
+    if(keys['ArrowUp']) car.y -= car.speed;
+    if(keys['ArrowDown']) car.y += car.speed;
 
-        // Classes
-        class Particle {
-            constructor(x, y, vx, vy, color, size, life, emoji = null) {
-                this.x = x;
-                this.y = y;
-                this.vx = vx;
-                this.vy = vy;
-                this.color = color;
-                this.size = size;
-                this.life = life;
-                this.maxLife = life;
-                this.gravity = 0.1;
-                this.emoji = emoji;
-                this.rotation = 0;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.3;
-            }
+    // keep in bounds
+    car.x = Math.max(0, Math.min(canvas.width-car.w, car.x));
+    car.y = Math.max(0, Math.min(canvas.height-car.h, car.y));
 
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy += this.gravity;
-                this.life--;
-                this.size *= 0.99;
-                this.rotation += this.rotationSpeed;
-            }
+    obstacleTimer--;
+    if(obstacleTimer <= 0){
+        spawnObstacle();
+        obstacleTimer = 60;
+    }
 
-            draw() {
-                const alpha = this.life / this.maxLife;
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                ctx.globalAlpha = alpha;
-                
-                if (this.emoji) {
-                    ctx.font = `${this.size * 2}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText(this.emoji, 0, 0);
-                } else {
-                    ctx.fillStyle = this.color;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                
-                ctx.restore();
-            }
+    // move obstacles
+    for(let i=obstacles.length-1;i>=0;i--){
+        const ob=obstacles[i];
+        ob.y += ob.speed;
+        if(ob.y > canvas.height){
+            obstacles.splice(i,1);
+            score += 10;
+        }else if(checkCollision(car, ob)){
+            gameOver();
+            return;
         }
+    }
+}
 
-        class FlyingObject {
-            constructor() {
-                this.x = canvas.width + 50;
-                this.y = Math.random() * (canvas.height - 200) + 100;
-                this.vx = -(Math.random() * 3 + 2);
-                this.vy = (Math.random() - 0.5) * 2;
-                this.emoji = flyingEmojis[Math.floor(Math.random() * flyingEmojis.length)];
-                this.size = 30;
-                this.rotation = 0;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.2;
-                this.points = 50;
-                this.clickable = true;
-                this.bounceCounter = 0;
-            }
+function checkCollision(a,b){
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
 
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.rotation += this.rotationSpeed;
-                
-                // Bounce off top and bottom
-                if (this.y < 50 || this.y > canvas.height - 150) {
-                    this.vy = -this.vy;
-                    this.bounceCounter++;
-                }
-                
-                // Remove if off screen or bounced too much
-                return this.x > -100 && this.bounceCounter < 3;
-            }
+function draw(){
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
 
-            draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                ctx.font = `${this.size}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(this.emoji, 0, 0);
-                ctx.restore();
-            }
+    // draw road
+    ctx.fillStyle = '#555';
+    ctx.fillRect(80,0,canvas.width-160,canvas.height);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    for(let y=0;y<canvas.height;y+=40){
+        ctx.beginPath();
+        ctx.moveTo(canvas.width/2, y);
+        ctx.lineTo(canvas.width/2, y+20);
+        ctx.stroke();
+    }
 
-            isClicked(x, y) {
-                const distance = Math.sqrt((x - this.x) ** 2 + (y - this.y) ** 2);
-                return distance < this.size;
-            }
-        }
+    // draw car
+    ctx.fillStyle = car.color;
+    ctx.fillRect(car.x,car.y,car.w,car.h);
 
-        class PowerUp {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.emoji = powerUpEmojis[Math.floor(Math.random() * powerUpEmojis.length)];
-                this.size = 40;
-                this.rotation = 0;
-                this.rotationSpeed = 0.1;
-                this.pulseTimer = 0;
-                this.life = 300;
-                this.type = Math.random() < 0.5 ? 'scoreMultiplier' : 'timeBonus';
-            }
+    // draw obstacles
+    obstacles.forEach(o=>{
+        ctx.fillStyle=o.color;
+        ctx.fillRect(o.x,o.y,o.w,o.h);
+    });
 
-            update() {
-                this.rotation += this.rotationSpeed;
-                this.pulseTimer++;
-                this.life--;
-                return this.life > 0;
-            }
+    document.getElementById('score').textContent = score;
+}
 
-            draw() {
-                const pulse = Math.sin(this.pulseTimer * 0.1) * 5;
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                ctx.font = `${this.size + pulse}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(this.emoji, 0, 0);
-                ctx.restore();
-            }
+function loop(){
+    if(!playing) return;
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
 
-            isClicked(x, y) {
-                const distance = Math.sqrt((x - this.x) ** 2 + (y - this.y) ** 2);
-                return distance < this.size;
-            }
-        }
+function gameOver(){
+    playing=false;
+    document.getElementById('message').textContent='Game Over! Score: '+score+' - press any key to restart';
+    document.getElementById('message').style.display='block';
+}
 
-        class SoundEffect {
-            constructor(text, x, y) {
-                this.text = text;
-                this.x = x;
-                this.y = y;
-                this.life = 60;
-                this.size = 20;
-                this.vy = -2;
-            }
-
-            update() {
-                this.y += this.vy;
-                this.life--;
-                this.size += 0.5;
-            }
-
-            draw() {
-                const alpha = this.life / 60;
-                ctx.save();
-                ctx.globalAlpha = alpha;
-                ctx.font = `${this.size}px Arial Black`;
-                ctx.textAlign = 'center';
-                ctx.fillStyle = '#FFD93D';
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2;
-                ctx.strokeText(this.text, this.x, this.y);
-                ctx.fillText(this.text, this.x, this.y);
-                ctx.restore();
-            }
-        }
-
-        // Game functions
-        function updateScore(points) {
-            score += points * (combo > 0 ? combo : 1);
-            document.getElementById('scoreValue').textContent = score;
-        }
-
-        function updateCombo() {
-            combo++;
-            comboTimer = 120;
-            document.getElementById('comboValue').textContent = combo;
-            document.getElementById('comboDisplay').classList.add('active');
-        }
-
-        function resetCombo() {
-            combo = 0;
-            document.getElementById('comboValue').textContent = combo;
-            document.getElementById('comboDisplay').classList.remove('active');
-        }
-
-        function updateTimer() {
-            const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
-            gameTimer = Math.max(0, 60 - elapsed);
-            document.getElementById('timerValue').textContent = gameTimer;
-            
-            if (gameTimer <= 0) {
-                endGame();
-            }
-        }
-
-        function endGame() {
-            cancelAnimationFrame(animationId);
-            
-            // Draw game over screen
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#FFD93D';
-            ctx.font = '48px Arial Black';
-            ctx.textAlign = 'center';
-            ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 50);
-            
-            ctx.fillStyle = '#fff';
-            ctx.font = '24px Arial Black';
-            ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
-            ctx.fillText(`Max Combo: ${Math.max(...[combo, 0])}`, canvas.width / 2, canvas.height / 2 + 30);
-            
-            ctx.fillStyle = '#FF6B6B';
-            ctx.font = '18px Arial';
-            ctx.fillText('Refresh to play again!', canvas.width / 2, canvas.height / 2 + 70);
-        }
-
-        function createExplosion(x, y, size = 20) {
-            for (let i = 0; i < size; i++) {
-                const angle = (Math.PI * 2 * i) / size;
-                const speed = Math.random() * 8 + 4;
-                const vx = Math.cos(angle) * speed;
-                const vy = Math.sin(angle) * speed;
-                const colors = ['#FF6B6B', '#FFD93D', '#6BCF7F', '#4ECDC4', '#FF0000', '#FFFF00'];
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const emoji = Math.random() < 0.3 ? flyingEmojis[Math.floor(Math.random() * flyingEmojis.length)] : null;
-                
-                particles.push(new Particle(x, y, vx, vy, color, Math.random() * 5 + 3, 60, emoji));
-            }
-            
-            screenShake = 10;
-            soundEffects.push(new SoundEffect(soundTexts[Math.floor(Math.random() * soundTexts.length)], x, y));
-        }
-
-        function spawnFlyingObject() {
-            if (Math.random() < 0.02) {
-                flyingObjects.push(new FlyingObject());
-            }
-        }
-
-        function spawnPowerUp() {
-            if (Math.random() < 0.005) {
-                const x = Math.random() * (canvas.width - 100) + 50;
-                const y = Math.random() * (canvas.height - 200) + 100;
-                powerUps.push(new PowerUp(x, y));
-            }
-        }
-
-        function showPowerUpNotification(text) {
-            const notification = document.createElement('div');
-            notification.className = 'power-up-notification';
-            notification.textContent = text;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 2000);
-        }
-
-        // Drawing functions
-        function drawSky() {
-            backgroundHue = (backgroundHue + 0.5) % 360;
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, `hsl(${backgroundHue + 180}, 50%, 70%)`);
-            gradient.addColorStop(0.6, `hsl(${backgroundHue + 180}, 50%, 70%)`);
-            gradient.addColorStop(0.6, `hsl(${backgroundHue + 120}, 60%, 40%)`);
-            gradient.addColorStop(1, `hsl(${backgroundHue + 120}, 60%, 40%)`);
-            
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function drawClouds() {
-            ctx.fillStyle = '#FFFFFF';
-            clouds.forEach(cloud => {
-                ctx.beginPath();
-                ctx.arc(cloud.x, cloud.y, cloud.width/2, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.width/3, cloud.y, cloud.height/2, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.width*2/3, cloud.y, cloud.width/2, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Add face to cloud
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(cloud.x + cloud.width/4, cloud.y - 5, 3, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.width*3/4, cloud.y - 5, 3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                cloud.x += cloud.speed;
-                if (cloud.x > canvas.width + 100) {
-                    cloud.x = -cloud.width - 50;
-                }
-            });
-        }
-
-        function drawBuildings() {
-            buildings.forEach(building => {
-                // Building shake if damaged
-                const shakeX = building.health < 3 ? (Math.random() - 0.5) * 4 : 0;
-                const shakeY = building.health < 3 ? (Math.random() - 0.5) * 4 : 0;
-                
-                // Building shadow
-                ctx.fillStyle = '#000000';
-                ctx.fillRect(building.x + 5 + shakeX, building.y + 5 + shakeY, building.width, building.height);
-                
-                // Building main (red tint if damaged)
-                const hue = building.health < 3 ? 'rgba(255, 0, 0, 0.3)' : building.color;
-                ctx.fillStyle = building.color;
-                ctx.fillRect(building.x + shakeX, building.y + shakeY, building.width, building.height);
-                
-                if (building.health < 3) {
-                    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-                    ctx.fillRect(building.x + shakeX, building.y + shakeY, building.width, building.height);
-                }
-                
-                // Building outline
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(building.x + shakeX, building.y + shakeY, building.width, building.height);
-                
-                // Windows
-                building.windows.forEach(window => {
-                    window.blinkTimer++;
-                    if (window.blinkTimer > 120) {
-                        window.on = !window.on;
-                        window.blinkTimer = 0;
-                    }
-                    
-                    ctx.fillStyle = window.on ? '#FFD93D' : '#000000';
-                    ctx.fillRect(window.x + shakeX, window.y + shakeY, 15, 15);
-                    ctx.strokeStyle = '#000000';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(window.x + shakeX, window.y + shakeY, 15, 15);
-                });
-            });
-        }
-
-        function drawAngryGuy() {
-            // Move angry guy towards mouse (but slower)
-            const dx = mouseX - angryGuy.x;
-            const dy = mouseY - angryGuy.y;
-            angryGuy.x += dx * 0.01;
-            angryGuy.y += dy * 0.01;
-            
-            // Bounce effect
-            angryGuy.bounceOffset = Math.sin(time * 0.1) * (angryGuy.rage + 5);
-            
-            // Rotation based on rage
-            angryGuy.rotation = Math.sin(time * 0.05) * (angryGuy.rage * 0.1);
-            
-            // Change expression based on rage
-            angryGuy.shoutTimer++;
-            if (angryGuy.shoutTimer > Math.max(30 - angryGuy.rage, 10)) {
-                angryGuy.expression = angryExpressions[Math.floor(Math.random() * angryExpressions.length)];
-                angryGuy.shoutTimer = 0;
-            }
-            
-            // Draw angry guy with rage effects
-            ctx.save();
-            ctx.translate(angryGuy.x, angryGuy.y + angryGuy.bounceOffset);
-            ctx.rotate(angryGuy.rotation);
-            
-            // Rage aura
-            if (angryGuy.rage > 5) {
-                ctx.fillStyle = `rgba(255, 0, 0, ${angryGuy.rage * 0.05})`;
-                ctx.beginPath();
-                ctx.arc(0, 0, angryGuy.size + angryGuy.rage, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            ctx.font = `${angryGuy.size + angryGuy.rage}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText(angryGuy.expression, 0, 0);
-            ctx.restore();
-            
-            // Draw health bar
-            const barWidth = 60;
-            const barHeight = 8;
-            const barX = angryGuy.x - barWidth / 2;
-            const barY = angryGuy.y - angryGuy.size - 20;
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(barX, barY, barWidth, barHeight);
-            ctx.fillStyle = angryGuy.hitPoints > 1 ? '#00FF00' : '#FF0000';
-            ctx.fillRect(barX, barY, (angryGuy.hitPoints / angryGuy.maxHitPoints) * barWidth, barHeight);
-            
-            // Draw speech bubble
-            const bubbleX = angryGuy.x + 80;
-            const bubbleY = angryGuy.y - 50 + angryGuy.bounceOffset;
-            
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.roundRect(bubbleX, bubbleY, 120, 60, 10);
-            ctx.fill();
-            
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            
-            // Speech bubble tail
-            ctx.beginPath();
-            ctx.moveTo(bubbleX, bubbleY + 40);
-            ctx.lineTo(bubbleX - 20, bubbleY + 50);
-            ctx.lineTo(bubbleX - 10, bubbleY + 30);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Speech text
-            ctx.fillStyle = '#000000';
-            ctx.font = '14px Arial Black';
-            ctx.textAlign = 'center';
-            const phrase = angryPhrases[Math.floor(time / 60) % angryPhrases.length];
-            ctx.fillText(phrase, bubbleX + 60, bubbleY + 35);
-            
-            // Decrease rage over time
-            if (angryGuy.rage > 0) {
-                angryGuy.rage -= 0.1;
-            }
-        }
-
-        function drawFlyingObjects() {
-            flyingObjects.forEach(obj => {
-                obj.draw();
-            });
-        }
-
-        function drawPowerUps() {
-            powerUps.forEach(powerUp => {
-                powerUp.draw();
-            });
-        }
-
-        function drawParticles() {
-            particles.forEach(particle => {
-                particle.update();
-                particle.draw();
-            });
-            particles = particles.filter(particle => particle.life > 0);
-        }
-
-        function drawSoundEffects() {
-            soundEffects.forEach(effect => {
-                effect.update();
-                effect.draw();
-            });
-            soundEffects = soundEffects.filter(effect => effect.life > 0);
-        }
-
-        function drawRandomEmojis() {
-            const emojis = ['😡', '🤬', '😤', '💥', '⚡', '🔥', '💢', '🌪️', '🎯', '🎪', '🎨', '🎭', '🎊', '✨', '💫', '⭐', '🌟'];
-            
-            for (let i = 0; i < 3; i++) {
-                if (Math.random() < 0.01) {
-                    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-                    const x = Math.random() * canvas.width;
-                    const y = Math.random() * canvas.height;
-                    const size = Math.random() * 15 + 15;
-                    const rotation = Math.random() * Math.PI * 2;
-                    
-                    ctx.save();
-                    ctx.translate(x, y);
-                    ctx.rotate(rotation);
-                    ctx.font = `${size}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.globalAlpha = 0.5;
-                    ctx.fillText(emoji, 0, 0);
-                    ctx.restore();
-                }
-            }
-        }
-
-        // Event handlers
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left;
-            mouseY = e.clientY - rect.top;
-        });
-
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            let clickedSomething = false;
-            
-            // Check flying objects
-            flyingObjects.forEach((obj, index) => {
-                if (obj.isClicked(x, y)) {
-                    updateScore(obj.points);
-                    updateCombo();
-                    createExplosion(obj.x, obj.y, 15);
-                    flyingObjects.splice(index, 1);
-                    clickedSomething = true;
-                }
-            });
-            
-            // Check power-ups
-            powerUps.forEach((powerUp, index) => {
-                if (powerUp.isClicked(x, y)) {
-                    if (powerUp.type === 'scoreMultiplier') {
-                        score *= 2;
-                        showPowerUpNotification('SCORE x2! 🎯');
-                    } else if (powerUp.type === 'timeBonus') {
-                        gameTimer += 10;
-                        showPowerUpNotification('TIME +10s! ⏰');
-                    }
-                    createExplosion(powerUp.x, powerUp.y, 25);
-                    powerUps.splice(index, 1);
-                    clickedSomething = true;
-                }
-            });
-            
-            // Check angry guy
-            const distanceToAngryGuy = Math.sqrt((x - angryGuy.x) ** 2 + (y - angryGuy.y) ** 2);
-            if (distanceToAngryGuy < angryGuy.size && angryGuy.clickable) {
-                angryGuy.hitPoints--;
-                angryGuy.rage += 3;
-                updateScore(100);
-                updateCombo();
-                createExplosion(angryGuy.x, angryGuy.y, 30);
-                
-                if (angryGuy.hitPoints <= 0) {
-                    updateScore(500);
-                    angryGuy.hitPoints = angryGuy.maxHitPoints;
-                    angryGuy.rage = 0;
-                    showPowerUpNotification('ANGRY GUY DEFEATED! 🏆');
-                }
-                clickedSomething = true;
-            }
-            
-            // Check buildings
-            buildings.forEach(building => {
-                if (x >= building.x && x <= building.x + building.width && 
-                    y >= building.y && y <= building.y + building.height) {
-                    building.health--;
-                    updateScore(25);
-                    updateCombo();
-                    createExplosion(x, y, 20);
-                    
-                    if (building.health <= 0) {
-                        building.health = 3;
-                        updateScore(200);
-                        showPowerUpNotification('BUILDING DESTROYED! 💥');
-                    }
-                    clickedSomething = true;
-                }
-            });
-            
-            // Check clouds
-            clouds.forEach(cloud => {
-                if (x >= cloud.x && x <= cloud.x + cloud.width && 
-                    y >= cloud.y - cloud.height/2 && y <= cloud.y + cloud.height/2) {
-                    updateScore(cloud.points);
-                    updateCombo();
-                    createExplosion(x, y, 12);
-                    cloud.x = -cloud.width - 50; // Reset cloud position
-                    clickedSomething = true;
-                }
-            });
-            
-            // If nothing was clicked, just create explosion
-            if (!clickedSomething) {
-                createExplosion(x, y, 10);
-            }
-        });
-
-        // Main game loop
-        function gameLoop() {
-            time++;
-            
-            // Update game state
-            updateTimer();
-            if (gameTimer <= 0) return;
-            
-            // Update combo timer
-            comboTimer--;
-            if (comboTimer <= 0 && combo > 0) {
-                resetCombo();
-            }
-            
-            // Apply screen shake
-            if (screenShake > 0) {
-                ctx.save();
-                ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
-                screenShake--;
-            }
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw everything
-            drawSky();
-            drawClouds();
-            drawBuildings();
-            drawAngryGuy();
-            
-            // Update and draw game objects
-            spawnFlyingObject();
-            spawnPowerUp();
-            
-            flyingObjects = flyingObjects.filter(obj => obj.update());
-            powerUps = powerUps.filter(powerUp => powerUp.update());
-            
-            drawFlyingObjects();
-            drawPowerUps();
-            drawParticles();
-            drawSoundEffects();
-            drawRandomEmojis();
-            
-            // Restore screen shake
-            if (screenShake >= 0) {
-                ctx.restore();
-            }
-            
-            // Continue animation
-            animationId = requestAnimationFrame(gameLoop);
-        }
-
-        // Start the game
-        gameLoop();
-
-        // Resize canvas for mobile
-        function resizeCanvas() {
-            if (window.innerWidth < 768) {
-                canvas.width = window.innerWidth * 0.9;
-                canvas.height = window.innerHeight * 0.6;
-            }
-        }
-        
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-    </script>
+document.getElementById('message').style.display='block';
+</script>
 </body>
-</html> 
-</html> 
+</html>
