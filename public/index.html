@@ -306,8 +306,8 @@
                     }
                 }
                 
-                // Smooth movement
-                const moveSpeed = 3 * playerStats.speed;
+                // Smooth movement (slower initial speed)
+                const moveSpeed = 2 * playerStats.speed;
                 const dx = this.targetX - this.x;
                 const dy = this.targetY - this.y;
                 
@@ -428,7 +428,7 @@
                 this.gridY = gridY;
                 this.x = gridX * TILE_SIZE + TILE_SIZE / 2;
                 this.y = gridY * TILE_SIZE + TILE_SIZE / 2;
-                this.timer = 180; // 3 seconds at 60 FPS
+                this.timer = 240; // 4 seconds at 60 FPS (more time to escape)
                 this.range = playerStats.bombRange;
                 this.pulsing = 0;
             }
@@ -486,11 +486,35 @@
                     }
                 });
                 
-                // Chain reaction with other bombs
+                // Chain reaction with other bombs (only if there's a clear path)
                 bombs.forEach(otherBomb => {
-                    const distance = Math.abs(otherBomb.gridX - this.gridX) + Math.abs(otherBomb.gridY - this.gridY);
-                    if (distance <= this.range && otherBomb.timer > 30) {
-                        otherBomb.timer = 30; // Make it explode soon
+                    if (otherBomb.timer <= 30) return; // Already about to explode
+                    
+                    // Check if the other bomb is in explosion range and path is clear
+                    const dx = otherBomb.gridX - this.gridX;
+                    const dy = otherBomb.gridY - this.gridY;
+                    
+                    // Only chain if the bomb is in one of the four cardinal directions
+                    if ((dx === 0 || dy === 0) && Math.abs(dx) + Math.abs(dy) <= this.range) {
+                        // Check for clear path (no walls blocking)
+                        let pathClear = true;
+                        const stepX = dx === 0 ? 0 : (dx > 0 ? 1 : -1);
+                        const stepY = dy === 0 ? 0 : (dy > 0 ? 1 : -1);
+                        
+                        let checkX = this.gridX + stepX;
+                        let checkY = this.gridY + stepY;
+                        
+                        while ((checkX !== otherBomb.gridX || checkY !== otherBomb.gridY) && pathClear) {
+                            if (grid[checkY][checkX] === 1 || grid[checkY][checkX] === 2) {
+                                pathClear = false; // Wall blocks the chain reaction
+                            }
+                            checkX += stepX;
+                            checkY += stepY;
+                        }
+                        
+                        if (pathClear) {
+                            otherBomb.timer = 30; // Make it explode soon
+                        }
                     }
                 });
             }
@@ -605,7 +629,7 @@
                 this.moveTimer++;
                 
                 // Improved AI movement with more variation
-                if (this.moveTimer > Math.random() * 40 + 30) { // Random movement timing
+                if (this.moveTimer > Math.random() * 60 + 60) { // Slower initial movement timing
                     this.moveTimer = 0;
                     
                     // Sometimes change direction randomly even if current path is clear
@@ -680,8 +704,8 @@
                     }
                 }
                 
-                // Smooth movement
-                const moveSpeed = 2;
+                // Smooth movement (slower enemy speed)
+                const moveSpeed = 1.5;
                 const dx = this.targetX - this.x;
                 const dy = this.targetY - this.y;
                 
@@ -840,7 +864,7 @@
         
         function spawnEnemies() {
             enemies = [];
-            const enemyCount = 3 + level;
+            const enemyCount = 2 + Math.floor(level / 2); // Start with fewer enemies
             
             for (let i = 0; i < enemyCount; i++) {
                 let x, y;
