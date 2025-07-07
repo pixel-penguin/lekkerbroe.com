@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LEKKERBROE - ANGRY TOWN CHAOS GAME!</title>
+    <title>LEKKERBROE - BOMBERMAN MAYHEM!</title>
     <style>
         * {
             margin: 0;
@@ -17,7 +17,6 @@
             background-size: 400% 400%;
             animation: gradientShift 2s ease infinite;
             overflow: hidden;
-            cursor: crosshair;
         }
 
         @keyframes gradientShift {
@@ -36,21 +35,21 @@
         }
 
         .title {
-            font-size: clamp(2rem, 8vw, 4rem);
+            font-size: clamp(2rem, 6vw, 3rem);
             color: #fff;
             text-shadow: 
                 3px 3px 0px #000,
                 6px 6px 0px #ff0000,
                 9px 9px 0px #ffff00;
-            transform: rotate(-5deg);
-            animation: titleShake 0.3s ease-in-out infinite alternate;
+            transform: rotate(-2deg);
+            animation: titleShake 0.5s ease-in-out infinite alternate;
             margin-bottom: 10px;
             z-index: 10;
         }
 
         @keyframes titleShake {
-            0% { transform: rotate(-5deg) translateX(-3px) scale(1); }
-            100% { transform: rotate(-3deg) translateX(3px) scale(1.05); }
+            0% { transform: rotate(-2deg) translateX(-2px) scale(1); }
+            100% { transform: rotate(0deg) translateX(2px) scale(1.02); }
         }
 
         .game-hud {
@@ -61,15 +60,17 @@
             justify-content: center;
         }
 
-        .score-display, .combo-display, .timer-display {
+        .hud-item {
             background: rgba(0,0,0,0.8);
             color: #fff;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 15px;
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: bold;
             border: 3px solid #FFD93D;
             animation: hudPulse 2s ease-in-out infinite alternate;
+            min-width: 100px;
+            text-align: center;
         }
 
         @keyframes hudPulse {
@@ -77,23 +78,12 @@
             100% { transform: scale(1.05); }
         }
 
-        .combo-display.active {
-            background: linear-gradient(45deg, #ff0000, #ffff00, #00ff00);
-            animation: comboFlash 0.5s ease-in-out infinite alternate;
-        }
-
-        @keyframes comboFlash {
-            0% { transform: scale(1.1) rotate(-2deg); }
-            100% { transform: scale(1.2) rotate(2deg); }
-        }
-
         #gameCanvas {
             border: 8px solid #000;
             border-radius: 20px;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 60%, #228B22 60%, #228B22 100%);
+            background: #228B22;
             margin: 10px;
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="%23ff0000" stroke="%23000" stroke-width="3"/><text x="15" y="20" text-anchor="middle" font-size="16" fill="%23fff">💥</text></svg>'), auto;
         }
 
         .social-links {
@@ -154,36 +144,40 @@
             50% { opacity: 1; }
         }
 
-        .power-up-notification {
+        .game-over {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #ff00ff);
+            background: rgba(0,0,0,0.9);
             color: #fff;
-            padding: 20px;
+            padding: 40px;
             border-radius: 20px;
-            font-size: 2rem;
-            font-weight: bold;
-            text-shadow: 2px 2px 0px #000;
-            animation: powerUpAnim 2s ease-out forwards;
+            text-align: center;
             z-index: 1000;
-            pointer-events: none;
+            border: 5px solid #FFD93D;
         }
 
-        @keyframes powerUpAnim {
-            0% { 
-                transform: translate(-50%, -50%) scale(0) rotate(0deg); 
-                opacity: 0; 
-            }
-            50% { 
-                transform: translate(-50%, -50%) scale(1.5) rotate(180deg); 
-                opacity: 1; 
-            }
-            100% { 
-                transform: translate(-50%, -50%) scale(1) rotate(360deg); 
-                opacity: 0; 
-            }
+        .game-over h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #FF6B6B;
+        }
+
+        .game-over button {
+            background: #4ECDC4;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .game-over button:hover {
+            background: #FFD93D;
         }
 
         @media (max-width: 768px) {
@@ -206,15 +200,16 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="title">LEKKERBROE CHAOS GAME!</h1>
+        <h1 class="title">LEKKERBROE BOMBERMAN!</h1>
         
         <div class="game-hud">
-            <div class="score-display">SCORE: <span id="scoreValue">0</span></div>
-            <div class="combo-display" id="comboDisplay">COMBO: <span id="comboValue">0</span>x</div>
-            <div class="timer-display">TIME: <span id="timerValue">60</span>s</div>
+            <div class="hud-item">BOMBS: <span id="bombCount">1</span></div>
+            <div class="hud-item">RANGE: <span id="bombRange">1</span></div>
+            <div class="hud-item">SPEED: <span id="playerSpeed">1</span></div>
+            <div class="hud-item">SCORE: <span id="scoreValue">0</span></div>
         </div>
         
-        <canvas id="gameCanvas" width="900" height="500"></canvas>
+        <canvas id="gameCanvas" width="750" height="600"></canvas>
         
         <div class="social-links">
             <a href="https://www.tiktok.com/@lekkerbroe" class="social-link tiktok" target="_blank">📱 TIKTOK</a>
@@ -225,723 +220,745 @@
     </div>
     
     <div class="instructions">
-        🎮 Click everything! Catch flying objects! Make chaos! 🎮
+        🎮 WASD/Arrow Keys to move • SPACE to place bombs • Destroy all enemies! 🎮
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Game state
-        let animationId;
-        let time = 0;
-        let mouseX = 0;
-        let mouseY = 0;
-        let explosions = [];
-        let particles = [];
-        let flyingObjects = [];
-        let powerUps = [];
-        let score = 0;
-        let combo = 0;
-        let comboTimer = 0;
-        let gameTimer = 60;
-        let gameStartTime = Date.now();
-        let soundEffects = [];
-        let screenShake = 0;
-        let backgroundHue = 0;
+        // Game constants
+        const TILE_SIZE = 50;
+        const GRID_WIDTH = 15;
+        const GRID_HEIGHT = 12;
+        const FPS = 60;
         
-        // Game elements
-        let angryGuy = {
-            x: 450,
-            y: 300,
-            targetX: 450,
-            targetY: 300,
-            size: 60,
-            rotation: 0,
-            expression: '🤬',
-            shoutTimer: 0,
-            bounceOffset: 0,
-            clickable: true,
-            hitPoints: 3,
-            maxHitPoints: 3,
-            powerUpTimer: 0,
-            rage: 0
+        // Game state
+        let gameRunning = true;
+        let score = 0;
+        let level = 1;
+        let keysPressed = {};
+        
+        // Game grid (0 = empty, 1 = solid wall, 2 = destructible wall, 3 = powerup)
+        let grid = [];
+        
+        // Game objects
+        let player = null;
+        let bombs = [];
+        let explosions = [];
+        let enemies = [];
+        let powerUps = [];
+        let particles = [];
+        
+        // Player stats
+        let playerStats = {
+            bombCount: 1,
+            bombRange: 1,
+            speed: 1,
+            maxBombs: 1
         };
-
-        // Building data with click interaction
-        const buildings = [
-            {x: 50, y: 200, width: 80, height: 120, color: '#FF6B6B', windows: [], clicked: false, health: 3},
-            {x: 150, y: 180, width: 100, height: 150, color: '#4ECDC4', windows: [], clicked: false, health: 3},
-            {x: 280, y: 220, width: 70, height: 100, color: '#45B7D1', windows: [], clicked: false, health: 3},
-            {x: 380, y: 190, width: 90, height: 130, color: '#96CEB4', windows: [], clicked: false, health: 3},
-            {x: 500, y: 170, width: 110, height: 160, color: '#FFEAA7', windows: [], clicked: false, health: 3},
-            {x: 640, y: 200, width: 85, height: 140, color: '#FF7675', windows: [], clicked: false, health: 3},
-            {x: 750, y: 210, width: 75, height: 110, color: '#A29BFE', windows: [], clicked: false, health: 3}
-        ];
-
-        // Initialize building windows
-        buildings.forEach(building => {
-            const windowsPerRow = Math.floor(building.width / 25);
-            const windowRows = Math.floor(building.height / 30);
-            
-            for (let row = 0; row < windowRows; row++) {
-                for (let col = 0; col < windowsPerRow; col++) {
-                    building.windows.push({
-                        x: building.x + 10 + col * 25,
-                        y: building.y + 10 + row * 30,
-                        on: Math.random() > 0.5,
-                        blinkTimer: Math.random() * 100,
-                        clickable: true,
-                        points: 10
-                    });
+        
+        // Initialize game grid
+        function initGrid() {
+            grid = [];
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                grid[y] = [];
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (x === 0 || y === 0 || x === GRID_WIDTH - 1 || y === GRID_HEIGHT - 1) {
+                        grid[y][x] = 1; // Solid walls around border
+                    } else if (x % 2 === 0 && y % 2 === 0) {
+                        grid[y][x] = 1; // Internal solid walls
+                    } else if ((x === 1 && y === 1) || (x === 2 && y === 1) || (x === 1 && y === 2)) {
+                        grid[y][x] = 0; // Player starting area
+                    } else if (Math.random() < 0.7) {
+                        grid[y][x] = 2; // Destructible walls
+                    } else {
+                        grid[y][x] = 0; // Empty space
+                    }
                 }
             }
-        });
-
-        // Clouds with interaction
-        const clouds = [
-            {x: -50, y: 50, width: 80, height: 40, speed: 0.5, clickable: true, points: 25},
-            {x: -100, y: 80, width: 100, height: 50, speed: 0.3, clickable: true, points: 30},
-            {x: -70, y: 30, width: 60, height: 30, speed: 0.7, clickable: true, points: 20},
-            {x: -120, y: 100, width: 90, height: 45, speed: 0.4, clickable: true, points: 25}
-        ];
-
-        // Game data
-        const angryExpressions = ['🤬', '😡', '😤', '🤯', '👹', '💀', '🔥', '👺', '😠', '🤢', '😵', '🤮', '🥵', '🤡'];
-        const angryPhrases = ['WAAAAH!', 'GRRRR!', 'NOOOO!', 'ARGHHH!', 'RAAAWR!', 'BOOM!', 'CRASH!', 'HULK SMASH!', 'LEKKERBROE!', 'CHAOS!', 'MAYHEM!', 'MADNESS!', 'INSANITY!', 'DESTRUCTION!'];
-        const flyingEmojis = ['🍕', '🍔', '🌮', '🍰', '🎂', '🍪', '🍩', '🧁', '🍎', '🍌', '🍇', '🍓', '🥑', '🥕', '🌽', '🥔', '🍅', '🥒', '🥬', '🥦'];
-        const powerUpEmojis = ['⚡', '💥', '🔥', '✨', '💫', '⭐', '🌟', '💎', '👑', '🏆'];
-        const soundTexts = ['POW!', 'BOOM!', 'CRASH!', 'BANG!', 'SMASH!', 'WHACK!', 'THUD!', 'KAPOW!', 'WHAM!', 'ZAP!'];
-
-        // Classes
-        class Particle {
-            constructor(x, y, vx, vy, color, size, life, emoji = null) {
-                this.x = x;
-                this.y = y;
-                this.vx = vx;
-                this.vy = vy;
-                this.color = color;
-                this.size = size;
-                this.life = life;
-                this.maxLife = life;
-                this.gravity = 0.1;
-                this.emoji = emoji;
-                this.rotation = 0;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.3;
+        }
+        
+        // Player class
+        class Player {
+            constructor(x, y) {
+                this.gridX = x;
+                this.gridY = y;
+                this.x = x * TILE_SIZE + TILE_SIZE / 2;
+                this.y = y * TILE_SIZE + TILE_SIZE / 2;
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.size = TILE_SIZE * 0.8;
+                this.moving = false;
+                this.alive = true;
+                this.invulnerable = false;
+                this.invulnerableTime = 0;
             }
-
+            
             update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.vy += this.gravity;
-                this.life--;
-                this.size *= 0.99;
-                this.rotation += this.rotationSpeed;
-            }
-
-            draw() {
-                const alpha = this.life / this.maxLife;
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                ctx.globalAlpha = alpha;
+                if (!this.alive) return;
                 
-                if (this.emoji) {
-                    ctx.font = `${this.size * 2}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.fillText(this.emoji, 0, 0);
+                // Handle invulnerability
+                if (this.invulnerable) {
+                    this.invulnerableTime--;
+                    if (this.invulnerableTime <= 0) {
+                        this.invulnerable = false;
+                    }
+                }
+                
+                // Smooth movement
+                const moveSpeed = 3 * playerStats.speed;
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                
+                if (Math.abs(dx) > 1) {
+                    this.x += Math.sign(dx) * Math.min(moveSpeed, Math.abs(dx));
                 } else {
-                    ctx.fillStyle = this.color;
+                    this.x = this.targetX;
+                }
+                
+                if (Math.abs(dy) > 1) {
+                    this.y += Math.sign(dy) * Math.min(moveSpeed, Math.abs(dy));
+                } else {
+                    this.y = this.targetY;
+                }
+                
+                this.moving = dx !== 0 || dy !== 0;
+                
+                // Handle movement input
+                if (!this.moving) {
+                    let newGridX = this.gridX;
+                    let newGridY = this.gridY;
+                    
+                    if (keysPressed['ArrowUp'] || keysPressed['KeyW']) {
+                        newGridY = Math.max(0, this.gridY - 1);
+                    } else if (keysPressed['ArrowDown'] || keysPressed['KeyS']) {
+                        newGridY = Math.min(GRID_HEIGHT - 1, this.gridY + 1);
+                    } else if (keysPressed['ArrowLeft'] || keysPressed['KeyA']) {
+                        newGridX = Math.max(0, this.gridX - 1);
+                    } else if (keysPressed['ArrowRight'] || keysPressed['KeyD']) {
+                        newGridX = Math.min(GRID_WIDTH - 1, this.gridX + 1);
+                    }
+                    
+                    // Check if movement is valid (empty tile and no bombs, unless it's the bomb we just placed)
+                    const isBombAt = bombs.some(bomb => bomb.gridX === newGridX && bomb.gridY === newGridY && 
+                                               !(bomb.gridX === this.gridX && bomb.gridY === this.gridY));
+                    
+                    if ((newGridX !== this.gridX || newGridY !== this.gridY) && 
+                        grid[newGridY][newGridX] === 0 && !isBombAt) {
+                        this.gridX = newGridX;
+                        this.gridY = newGridY;
+                        this.targetX = this.gridX * TILE_SIZE + TILE_SIZE / 2;
+                        this.targetY = this.gridY * TILE_SIZE + TILE_SIZE / 2;
+                    }
+                }
+                
+                // Check for power-up collection
+                for (let i = powerUps.length - 1; i >= 0; i--) {
+                    const powerUp = powerUps[i];
+                    if (powerUp.gridX === this.gridX && powerUp.gridY === this.gridY) {
+                        this.collectPowerUp(powerUp);
+                        powerUps.splice(i, 1);
+                    }
+                }
+            }
+            
+            collectPowerUp(powerUp) {
+                score += 100;
+                switch (powerUp.type) {
+                    case 'bombCount':
+                        playerStats.maxBombs++;
+                        break;
+                    case 'bombRange':
+                        playerStats.bombRange++;
+                        break;
+                    case 'speed':
+                        playerStats.speed = Math.min(3, playerStats.speed + 0.5);
+                        break;
+                }
+                updateHUD();
+                createParticles(powerUp.x, powerUp.y, powerUp.color);
+            }
+            
+            takeDamage() {
+                if (this.invulnerable) return;
+                
+                this.alive = false;
+                gameOver();
+            }
+            
+            draw() {
+                if (!this.alive) return;
+                
+                ctx.save();
+                
+                // Flicker if invulnerable
+                if (this.invulnerable && Math.floor(this.invulnerableTime / 5) % 2) {
+                    ctx.globalAlpha = 0.5;
+                }
+                
+                // Draw player as bomberman character
+                ctx.fillStyle = '#FFD93D';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw face
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(this.x - 8, this.y - 5, 3, 0, Math.PI * 2);
+                ctx.arc(this.x + 8, this.y - 5, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw smile
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + 5, 8, 0, Math.PI);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+        }
+        
+        // Bomb class
+        class Bomb {
+            constructor(gridX, gridY) {
+                this.gridX = gridX;
+                this.gridY = gridY;
+                this.x = gridX * TILE_SIZE + TILE_SIZE / 2;
+                this.y = gridY * TILE_SIZE + TILE_SIZE / 2;
+                this.timer = 180; // 3 seconds at 60 FPS
+                this.range = playerStats.bombRange;
+                this.pulsing = 0;
+            }
+            
+            update() {
+                this.timer--;
+                this.pulsing += 0.2;
+                
+                if (this.timer <= 0) {
+                    this.explode();
+                    return false;
+                }
+                return true;
+            }
+            
+            explode() {
+                // Create center explosion
+                explosions.push(new Explosion(this.gridX, this.gridY, 'center'));
+                
+                // Create explosions in four directions
+                const directions = [
+                    { dx: 0, dy: -1 }, // Up
+                    { dx: 0, dy: 1 },  // Down
+                    { dx: -1, dy: 0 }, // Left
+                    { dx: 1, dy: 0 }   // Right
+                ];
+                
+                directions.forEach(dir => {
+                    for (let i = 1; i <= this.range; i++) {
+                        const newX = this.gridX + dir.dx * i;
+                        const newY = this.gridY + dir.dy * i;
+                        
+                        if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT) break;
+                        
+                        const cellType = grid[newY][newX];
+                        
+                        if (cellType === 1) break; // Solid wall blocks explosion
+                        
+                        const explosionType = i === this.range ? 'end' : 'middle';
+                        explosions.push(new Explosion(newX, newY, explosionType));
+                        
+                        if (cellType === 2) {
+                            // Destroy destructible wall
+                            grid[newY][newX] = 0;
+                            score += 10;
+                            
+                            // Chance to drop power-up
+                            if (Math.random() < 0.2) {
+                                const types = ['bombCount', 'bombRange', 'speed'];
+                                const type = types[Math.floor(Math.random() * types.length)];
+                                powerUps.push(new PowerUp(newX, newY, type));
+                            }
+                            break; // Wall blocks further explosion
+                        }
+                    }
+                });
+                
+                // Chain reaction with other bombs
+                bombs.forEach(otherBomb => {
+                    const distance = Math.abs(otherBomb.gridX - this.gridX) + Math.abs(otherBomb.gridY - this.gridY);
+                    if (distance <= this.range && otherBomb.timer > 30) {
+                        otherBomb.timer = 30; // Make it explode soon
+                    }
+                });
+            }
+            
+            draw() {
+                ctx.save();
+                
+                // Pulsing effect
+                const scale = 1 + Math.sin(this.pulsing) * 0.1;
+                const urgency = this.timer < 60 ? (60 - this.timer) / 60 : 0;
+                
+                ctx.translate(this.x, this.y);
+                ctx.scale(scale, scale);
+                
+                // Bomb body
+                ctx.fillStyle = this.timer < 60 ? `rgb(${255}, ${50 + urgency * 205}, ${50 + urgency * 205})` : '#333';
+                ctx.beginPath();
+                ctx.arc(0, 0, TILE_SIZE * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Fuse
+                ctx.strokeStyle = '#FF6B6B';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, -TILE_SIZE * 0.4);
+                ctx.lineTo(5, -TILE_SIZE * 0.6);
+                ctx.stroke();
+                
+                // Spark at end of fuse
+                if (this.timer % 10 < 5) {
+                    ctx.fillStyle = '#FFD93D';
                     ctx.beginPath();
-                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.arc(5, -TILE_SIZE * 0.6, 3, 0, Math.PI * 2);
                     ctx.fill();
                 }
                 
                 ctx.restore();
             }
         }
-
-        class FlyingObject {
-            constructor() {
-                this.x = canvas.width + 50;
-                this.y = Math.random() * (canvas.height - 200) + 100;
-                this.vx = -(Math.random() * 3 + 2);
-                this.vy = (Math.random() - 0.5) * 2;
-                this.emoji = flyingEmojis[Math.floor(Math.random() * flyingEmojis.length)];
-                this.size = 30;
-                this.rotation = 0;
-                this.rotationSpeed = (Math.random() - 0.5) * 0.2;
-                this.points = 50;
-                this.clickable = true;
-                this.bounceCounter = 0;
+        
+        // Explosion class
+        class Explosion {
+            constructor(gridX, gridY, type) {
+                this.gridX = gridX;
+                this.gridY = gridY;
+                this.x = gridX * TILE_SIZE + TILE_SIZE / 2;
+                this.y = gridY * TILE_SIZE + TILE_SIZE / 2;
+                this.type = type;
+                this.timer = 30;
+                this.maxTimer = 30;
             }
-
+            
+            update() {
+                this.timer--;
+                
+                // Check for player damage
+                if (player.gridX === this.gridX && player.gridY === this.gridY) {
+                    player.takeDamage();
+                }
+                
+                // Check for enemy damage
+                enemies.forEach(enemy => {
+                    if (enemy.gridX === this.gridX && enemy.gridY === this.gridY) {
+                        enemy.takeDamage();
+                    }
+                });
+                
+                return this.timer > 0;
+            }
+            
+            draw() {
+                const alpha = this.timer / this.maxTimer;
+                const scale = 1 - (this.timer / this.maxTimer) * 0.3;
+                
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.translate(this.x, this.y);
+                ctx.scale(scale, scale);
+                
+                // Draw explosion effect
+                const colors = ['#FFD93D', '#FF6B6B', '#FF0000'];
+                colors.forEach((color, index) => {
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, (TILE_SIZE * 0.4) - (index * 8), 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                ctx.restore();
+            }
+        }
+        
+        // Enemy class
+        class Enemy {
+            constructor(gridX, gridY) {
+                this.gridX = gridX;
+                this.gridY = gridY;
+                this.x = gridX * TILE_SIZE + TILE_SIZE / 2;
+                this.y = gridY * TILE_SIZE + TILE_SIZE / 2;
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.direction = Math.floor(Math.random() * 4);
+                this.speed = 1;
+                this.moveTimer = 0;
+                this.alive = true;
+                this.color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+            }
+            
+            update() {
+                if (!this.alive) return;
+                
+                this.moveTimer++;
+                
+                // Simple AI movement
+                if (this.moveTimer > 60) {
+                    this.moveTimer = 0;
+                    
+                    // Try to move in current direction, otherwise pick random
+                    let attempts = 0;
+                    while (attempts < 4) {
+                        const directions = [
+                            { dx: 0, dy: -1 }, // Up
+                            { dx: 0, dy: 1 },  // Down
+                            { dx: -1, dy: 0 }, // Left
+                            { dx: 1, dy: 0 }   // Right
+                        ];
+                        
+                        const dir = directions[this.direction];
+                        const newGridX = this.gridX + dir.dx;
+                        const newGridY = this.gridY + dir.dy;
+                        
+                        // Check if position is valid (empty and no bombs)
+                        const isBombAt = bombs.some(bomb => bomb.gridX === newGridX && bomb.gridY === newGridY);
+                        
+                        if (newGridX >= 0 && newGridX < GRID_WIDTH && 
+                            newGridY >= 0 && newGridY < GRID_HEIGHT && 
+                            grid[newGridY][newGridX] === 0 && !isBombAt) {
+                            
+                            this.gridX = newGridX;
+                            this.gridY = newGridY;
+                            this.targetX = this.gridX * TILE_SIZE + TILE_SIZE / 2;
+                            this.targetY = this.gridY * TILE_SIZE + TILE_SIZE / 2;
+                            break;
+                        } else {
+                            this.direction = Math.floor(Math.random() * 4);
+                            attempts++;
+                        }
+                    }
+                }
+                
+                // Smooth movement
+                const moveSpeed = 2;
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                
+                if (Math.abs(dx) > 1) {
+                    this.x += Math.sign(dx) * Math.min(moveSpeed, Math.abs(dx));
+                } else {
+                    this.x = this.targetX;
+                }
+                
+                if (Math.abs(dy) > 1) {
+                    this.y += Math.sign(dy) * Math.min(moveSpeed, Math.abs(dy));
+                } else {
+                    this.y = this.targetY;
+                }
+                
+                // Check collision with player
+                if (this.gridX === player.gridX && this.gridY === player.gridY) {
+                    player.takeDamage();
+                }
+            }
+            
+            takeDamage() {
+                this.alive = false;
+                score += 200;
+                createParticles(this.x, this.y, this.color);
+                
+                // Check win condition
+                if (enemies.filter(e => e.alive).length === 0) {
+                    nextLevel();
+                }
+            }
+            
+            draw() {
+                if (!this.alive) return;
+                
+                // Draw enemy
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, TILE_SIZE * 0.35, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw evil face
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(this.x - 6, this.y - 5, 2, 0, Math.PI * 2);
+                ctx.arc(this.x + 6, this.y - 5, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Evil grin
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + 3, 6, 0, Math.PI, true);
+                ctx.stroke();
+            }
+        }
+        
+        // PowerUp class
+        class PowerUp {
+            constructor(gridX, gridY, type) {
+                this.gridX = gridX;
+                this.gridY = gridY;
+                this.x = gridX * TILE_SIZE + TILE_SIZE / 2;
+                this.y = gridY * TILE_SIZE + TILE_SIZE / 2;
+                this.type = type;
+                this.pulsing = 0;
+                
+                const colors = {
+                    bombCount: '#4ECDC4',
+                    bombRange: '#FF6B6B',
+                    speed: '#FFD93D'
+                };
+                this.color = colors[type];
+            }
+            
+            update() {
+                this.pulsing += 0.1;
+            }
+            
+            draw() {
+                const pulse = Math.sin(this.pulsing) * 5;
+                
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, TILE_SIZE * 0.25 + pulse, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw power-up symbol
+                ctx.fillStyle = '#000';
+                ctx.font = '20px Arial Black';
+                ctx.textAlign = 'center';
+                const symbols = {
+                    bombCount: '+B',
+                    bombRange: '+R',
+                    speed: '+S'
+                };
+                ctx.fillText(symbols[this.type], this.x, this.y + 5);
+            }
+        }
+        
+        // Particle class
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.color = color;
+                this.life = 30;
+                this.maxLife = 30;
+                this.size = Math.random() * 5 + 2;
+            }
+            
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.rotation += this.rotationSpeed;
-                
-                // Bounce off top and bottom
-                if (this.y < 50 || this.y > canvas.height - 150) {
-                    this.vy = -this.vy;
-                    this.bounceCounter++;
-                }
-                
-                // Remove if off screen or bounced too much
-                return this.x > -100 && this.bounceCounter < 3;
-            }
-
-            draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                ctx.font = `${this.size}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(this.emoji, 0, 0);
-                ctx.restore();
-            }
-
-            isClicked(x, y) {
-                const distance = Math.sqrt((x - this.x) ** 2 + (y - this.y) ** 2);
-                return distance < this.size;
-            }
-        }
-
-        class PowerUp {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.emoji = powerUpEmojis[Math.floor(Math.random() * powerUpEmojis.length)];
-                this.size = 40;
-                this.rotation = 0;
-                this.rotationSpeed = 0.1;
-                this.pulseTimer = 0;
-                this.life = 300;
-                this.type = Math.random() < 0.5 ? 'scoreMultiplier' : 'timeBonus';
-            }
-
-            update() {
-                this.rotation += this.rotationSpeed;
-                this.pulseTimer++;
+                this.vy += 0.3; // Gravity
                 this.life--;
+                this.size *= 0.98;
                 return this.life > 0;
             }
-
+            
             draw() {
-                const pulse = Math.sin(this.pulseTimer * 0.1) * 5;
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                ctx.font = `${this.size + pulse}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(this.emoji, 0, 0);
-                ctx.restore();
-            }
-
-            isClicked(x, y) {
-                const distance = Math.sqrt((x - this.x) ** 2 + (y - this.y) ** 2);
-                return distance < this.size;
-            }
-        }
-
-        class SoundEffect {
-            constructor(text, x, y) {
-                this.text = text;
-                this.x = x;
-                this.y = y;
-                this.life = 60;
-                this.size = 20;
-                this.vy = -2;
-            }
-
-            update() {
-                this.y += this.vy;
-                this.life--;
-                this.size += 0.5;
-            }
-
-            draw() {
-                const alpha = this.life / 60;
+                const alpha = this.life / this.maxLife;
                 ctx.save();
                 ctx.globalAlpha = alpha;
-                ctx.font = `${this.size}px Arial Black`;
-                ctx.textAlign = 'center';
-                ctx.fillStyle = '#FFD93D';
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2;
-                ctx.strokeText(this.text, this.x, this.y);
-                ctx.fillText(this.text, this.x, this.y);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.restore();
             }
         }
-
-        // Game functions
-        function updateScore(points) {
-            score += points * (combo > 0 ? combo : 1);
+        
+        // Utility functions
+        function createParticles(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+        
+        function placeBomb() {
+            // Count active bombs placed by player
+            const activeBombs = bombs.length;
+            if (activeBombs >= playerStats.maxBombs) return;
+            
+            // Check if there's already a bomb at this position
+            const existingBomb = bombs.find(bomb => bomb.gridX === player.gridX && bomb.gridY === player.gridY);
+            if (existingBomb) return;
+            
+            // Only place bomb on empty tiles
+            if (grid[player.gridY][player.gridX] !== 0) return;
+            
+            bombs.push(new Bomb(player.gridX, player.gridY));
+        }
+        
+        function spawnEnemies() {
+            enemies = [];
+            const enemyCount = 3 + level;
+            
+            for (let i = 0; i < enemyCount; i++) {
+                let x, y;
+                do {
+                    x = Math.floor(Math.random() * (GRID_WIDTH - 2)) + 1;
+                    y = Math.floor(Math.random() * (GRID_HEIGHT - 2)) + 1;
+                } while (grid[y][x] !== 0 || (x < 3 && y < 3)); // Don't spawn near player
+                
+                enemies.push(new Enemy(x, y));
+            }
+        }
+        
+        function updateHUD() {
+            document.getElementById('bombCount').textContent = playerStats.maxBombs;
+            document.getElementById('bombRange').textContent = playerStats.bombRange;
+            document.getElementById('playerSpeed').textContent = playerStats.speed;
             document.getElementById('scoreValue').textContent = score;
         }
-
-        function updateCombo() {
-            combo++;
-            comboTimer = 120;
-            document.getElementById('comboValue').textContent = combo;
-            document.getElementById('comboDisplay').classList.add('active');
-        }
-
-        function resetCombo() {
-            combo = 0;
-            document.getElementById('comboValue').textContent = combo;
-            document.getElementById('comboDisplay').classList.remove('active');
-        }
-
-        function updateTimer() {
-            const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
-            gameTimer = Math.max(0, 60 - elapsed);
-            document.getElementById('timerValue').textContent = gameTimer;
+        
+        function nextLevel() {
+            level++;
+            score += 1000;
             
-            if (gameTimer <= 0) {
-                endGame();
-            }
-        }
-
-        function endGame() {
-            cancelAnimationFrame(animationId);
+            // Reset player stats for new level
+            playerStats.bombCount = 1;
+            playerStats.bombRange = Math.min(5, Math.floor(level / 2) + 1);
+            playerStats.speed = Math.min(3, 1 + (level - 1) * 0.2);
+            playerStats.maxBombs = Math.min(5, Math.floor(level / 3) + 1);
             
-            // Draw game over screen
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            initGame();
+        }
+        
+        function gameOver() {
+            gameRunning = false;
             
-            ctx.fillStyle = '#FFD93D';
-            ctx.font = '48px Arial Black';
-            ctx.textAlign = 'center';
-            ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 50);
+            const gameOverDiv = document.createElement('div');
+            gameOverDiv.className = 'game-over';
+            gameOverDiv.innerHTML = `
+                <h2>GAME OVER!</h2>
+                <p>Final Score: ${score}</p>
+                <p>Level Reached: ${level}</p>
+                <button onclick="restartGame()">PLAY AGAIN</button>
+            `;
+            document.body.appendChild(gameOverDiv);
+        }
+        
+        function restartGame() {
+            const gameOverDiv = document.querySelector('.game-over');
+            if (gameOverDiv) gameOverDiv.remove();
             
-            ctx.fillStyle = '#fff';
-            ctx.font = '24px Arial Black';
-            ctx.fillText(`Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
-            ctx.fillText(`Max Combo: ${Math.max(...[combo, 0])}`, canvas.width / 2, canvas.height / 2 + 30);
+            score = 0;
+            level = 1;
+            playerStats = {
+                bombCount: 1,
+                bombRange: 1,
+                speed: 1,
+                maxBombs: 1
+            };
             
-            ctx.fillStyle = '#FF6B6B';
-            ctx.font = '18px Arial';
-            ctx.fillText('Refresh to play again!', canvas.width / 2, canvas.height / 2 + 70);
+            initGame();
         }
-
-        function createExplosion(x, y, size = 20) {
-            for (let i = 0; i < size; i++) {
-                const angle = (Math.PI * 2 * i) / size;
-                const speed = Math.random() * 8 + 4;
-                const vx = Math.cos(angle) * speed;
-                const vy = Math.sin(angle) * speed;
-                const colors = ['#FF6B6B', '#FFD93D', '#6BCF7F', '#4ECDC4', '#FF0000', '#FFFF00'];
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const emoji = Math.random() < 0.3 ? flyingEmojis[Math.floor(Math.random() * flyingEmojis.length)] : null;
-                
-                particles.push(new Particle(x, y, vx, vy, color, Math.random() * 5 + 3, 60, emoji));
-            }
+        
+        function initGame() {
+            gameRunning = true;
+            bombs = [];
+            explosions = [];
+            powerUps = [];
+            particles = [];
             
-            screenShake = 10;
-            soundEffects.push(new SoundEffect(soundTexts[Math.floor(Math.random() * soundTexts.length)], x, y));
+            initGrid();
+            player = new Player(1, 1);
+            spawnEnemies();
+            updateHUD();
         }
-
-        function spawnFlyingObject() {
-            if (Math.random() < 0.02) {
-                flyingObjects.push(new FlyingObject());
-            }
-        }
-
-        function spawnPowerUp() {
-            if (Math.random() < 0.005) {
-                const x = Math.random() * (canvas.width - 100) + 50;
-                const y = Math.random() * (canvas.height - 200) + 100;
-                powerUps.push(new PowerUp(x, y));
-            }
-        }
-
-        function showPowerUpNotification(text) {
-            const notification = document.createElement('div');
-            notification.className = 'power-up-notification';
-            notification.textContent = text;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 2000);
-        }
-
-        // Drawing functions
-        function drawSky() {
-            backgroundHue = (backgroundHue + 0.5) % 360;
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, `hsl(${backgroundHue + 180}, 50%, 70%)`);
-            gradient.addColorStop(0.6, `hsl(${backgroundHue + 180}, 50%, 70%)`);
-            gradient.addColorStop(0.6, `hsl(${backgroundHue + 120}, 60%, 40%)`);
-            gradient.addColorStop(1, `hsl(${backgroundHue + 120}, 60%, 40%)`);
-            
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function drawClouds() {
-            ctx.fillStyle = '#FFFFFF';
-            clouds.forEach(cloud => {
-                ctx.beginPath();
-                ctx.arc(cloud.x, cloud.y, cloud.width/2, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.width/3, cloud.y, cloud.height/2, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.width*2/3, cloud.y, cloud.width/2, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Add face to cloud
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(cloud.x + cloud.width/4, cloud.y - 5, 3, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.width*3/4, cloud.y - 5, 3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                cloud.x += cloud.speed;
-                if (cloud.x > canvas.width + 100) {
-                    cloud.x = -cloud.width - 50;
-                }
-            });
-        }
-
-        function drawBuildings() {
-            buildings.forEach(building => {
-                // Building shake if damaged
-                const shakeX = building.health < 3 ? (Math.random() - 0.5) * 4 : 0;
-                const shakeY = building.health < 3 ? (Math.random() - 0.5) * 4 : 0;
-                
-                // Building shadow
-                ctx.fillStyle = '#000000';
-                ctx.fillRect(building.x + 5 + shakeX, building.y + 5 + shakeY, building.width, building.height);
-                
-                // Building main (red tint if damaged)
-                const hue = building.health < 3 ? 'rgba(255, 0, 0, 0.3)' : building.color;
-                ctx.fillStyle = building.color;
-                ctx.fillRect(building.x + shakeX, building.y + shakeY, building.width, building.height);
-                
-                if (building.health < 3) {
-                    ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-                    ctx.fillRect(building.x + shakeX, building.y + shakeY, building.width, building.height);
-                }
-                
-                // Building outline
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 3;
-                ctx.strokeRect(building.x + shakeX, building.y + shakeY, building.width, building.height);
-                
-                // Windows
-                building.windows.forEach(window => {
-                    window.blinkTimer++;
-                    if (window.blinkTimer > 120) {
-                        window.on = !window.on;
-                        window.blinkTimer = 0;
-                    }
+        
+        // Draw functions
+        function drawGrid() {
+            for (let y = 0; y < GRID_HEIGHT; y++) {
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    const cellX = x * TILE_SIZE;
+                    const cellY = y * TILE_SIZE;
                     
-                    ctx.fillStyle = window.on ? '#FFD93D' : '#000000';
-                    ctx.fillRect(window.x + shakeX, window.y + shakeY, 15, 15);
-                    ctx.strokeStyle = '#000000';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(window.x + shakeX, window.y + shakeY, 15, 15);
-                });
-            });
-        }
-
-        function drawAngryGuy() {
-            // Move angry guy towards mouse (but slower)
-            const dx = mouseX - angryGuy.x;
-            const dy = mouseY - angryGuy.y;
-            angryGuy.x += dx * 0.01;
-            angryGuy.y += dy * 0.01;
-            
-            // Bounce effect
-            angryGuy.bounceOffset = Math.sin(time * 0.1) * (angryGuy.rage + 5);
-            
-            // Rotation based on rage
-            angryGuy.rotation = Math.sin(time * 0.05) * (angryGuy.rage * 0.1);
-            
-            // Change expression based on rage
-            angryGuy.shoutTimer++;
-            if (angryGuy.shoutTimer > Math.max(30 - angryGuy.rage, 10)) {
-                angryGuy.expression = angryExpressions[Math.floor(Math.random() * angryExpressions.length)];
-                angryGuy.shoutTimer = 0;
-            }
-            
-            // Draw angry guy with rage effects
-            ctx.save();
-            ctx.translate(angryGuy.x, angryGuy.y + angryGuy.bounceOffset);
-            ctx.rotate(angryGuy.rotation);
-            
-            // Rage aura
-            if (angryGuy.rage > 5) {
-                ctx.fillStyle = `rgba(255, 0, 0, ${angryGuy.rage * 0.05})`;
-                ctx.beginPath();
-                ctx.arc(0, 0, angryGuy.size + angryGuy.rage, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            ctx.font = `${angryGuy.size + angryGuy.rage}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText(angryGuy.expression, 0, 0);
-            ctx.restore();
-            
-            // Draw health bar
-            const barWidth = 60;
-            const barHeight = 8;
-            const barX = angryGuy.x - barWidth / 2;
-            const barY = angryGuy.y - angryGuy.size - 20;
-            
-            ctx.fillStyle = '#000';
-            ctx.fillRect(barX, barY, barWidth, barHeight);
-            ctx.fillStyle = angryGuy.hitPoints > 1 ? '#00FF00' : '#FF0000';
-            ctx.fillRect(barX, barY, (angryGuy.hitPoints / angryGuy.maxHitPoints) * barWidth, barHeight);
-            
-            // Draw speech bubble
-            const bubbleX = angryGuy.x + 80;
-            const bubbleY = angryGuy.y - 50 + angryGuy.bounceOffset;
-            
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.roundRect(bubbleX, bubbleY, 120, 60, 10);
-            ctx.fill();
-            
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-            
-            // Speech bubble tail
-            ctx.beginPath();
-            ctx.moveTo(bubbleX, bubbleY + 40);
-            ctx.lineTo(bubbleX - 20, bubbleY + 50);
-            ctx.lineTo(bubbleX - 10, bubbleY + 30);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-            
-            // Speech text
-            ctx.fillStyle = '#000000';
-            ctx.font = '14px Arial Black';
-            ctx.textAlign = 'center';
-            const phrase = angryPhrases[Math.floor(time / 60) % angryPhrases.length];
-            ctx.fillText(phrase, bubbleX + 60, bubbleY + 35);
-            
-            // Decrease rage over time
-            if (angryGuy.rage > 0) {
-                angryGuy.rage -= 0.1;
-            }
-        }
-
-        function drawFlyingObjects() {
-            flyingObjects.forEach(obj => {
-                obj.draw();
-            });
-        }
-
-        function drawPowerUps() {
-            powerUps.forEach(powerUp => {
-                powerUp.draw();
-            });
-        }
-
-        function drawParticles() {
-            particles.forEach(particle => {
-                particle.update();
-                particle.draw();
-            });
-            particles = particles.filter(particle => particle.life > 0);
-        }
-
-        function drawSoundEffects() {
-            soundEffects.forEach(effect => {
-                effect.update();
-                effect.draw();
-            });
-            soundEffects = soundEffects.filter(effect => effect.life > 0);
-        }
-
-        function drawRandomEmojis() {
-            const emojis = ['😡', '🤬', '😤', '💥', '⚡', '🔥', '💢', '🌪️', '🎯', '🎪', '🎨', '🎭', '🎊', '✨', '💫', '⭐', '🌟'];
-            
-            for (let i = 0; i < 3; i++) {
-                if (Math.random() < 0.01) {
-                    const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-                    const x = Math.random() * canvas.width;
-                    const y = Math.random() * canvas.height;
-                    const size = Math.random() * 15 + 15;
-                    const rotation = Math.random() * Math.PI * 2;
-                    
-                    ctx.save();
-                    ctx.translate(x, y);
-                    ctx.rotate(rotation);
-                    ctx.font = `${size}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.globalAlpha = 0.5;
-                    ctx.fillText(emoji, 0, 0);
-                    ctx.restore();
-                }
-            }
-        }
-
-        // Event handlers
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left;
-            mouseY = e.clientY - rect.top;
-        });
-
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            let clickedSomething = false;
-            
-            // Check flying objects
-            flyingObjects.forEach((obj, index) => {
-                if (obj.isClicked(x, y)) {
-                    updateScore(obj.points);
-                    updateCombo();
-                    createExplosion(obj.x, obj.y, 15);
-                    flyingObjects.splice(index, 1);
-                    clickedSomething = true;
-                }
-            });
-            
-            // Check power-ups
-            powerUps.forEach((powerUp, index) => {
-                if (powerUp.isClicked(x, y)) {
-                    if (powerUp.type === 'scoreMultiplier') {
-                        score *= 2;
-                        showPowerUpNotification('SCORE x2! 🎯');
-                    } else if (powerUp.type === 'timeBonus') {
-                        gameTimer += 10;
-                        showPowerUpNotification('TIME +10s! ⏰');
+                    switch (grid[y][x]) {
+                        case 1: // Solid wall
+                            ctx.fillStyle = '#666';
+                            ctx.fillRect(cellX, cellY, TILE_SIZE, TILE_SIZE);
+                            ctx.strokeStyle = '#333';
+                            ctx.lineWidth = 2;
+                            ctx.strokeRect(cellX, cellY, TILE_SIZE, TILE_SIZE);
+                            break;
+                        case 2: // Destructible wall
+                            ctx.fillStyle = '#8B4513';
+                            ctx.fillRect(cellX, cellY, TILE_SIZE, TILE_SIZE);
+                            ctx.strokeStyle = '#654321';
+                            ctx.lineWidth = 2;
+                            ctx.strokeRect(cellX, cellY, TILE_SIZE, TILE_SIZE);
+                            break;
+                        default: // Empty space
+                            ctx.fillStyle = '#90EE90';
+                            ctx.fillRect(cellX, cellY, TILE_SIZE, TILE_SIZE);
+                            break;
                     }
-                    createExplosion(powerUp.x, powerUp.y, 25);
-                    powerUps.splice(index, 1);
-                    clickedSomething = true;
                 }
-            });
-            
-            // Check angry guy
-            const distanceToAngryGuy = Math.sqrt((x - angryGuy.x) ** 2 + (y - angryGuy.y) ** 2);
-            if (distanceToAngryGuy < angryGuy.size && angryGuy.clickable) {
-                angryGuy.hitPoints--;
-                angryGuy.rage += 3;
-                updateScore(100);
-                updateCombo();
-                createExplosion(angryGuy.x, angryGuy.y, 30);
-                
-                if (angryGuy.hitPoints <= 0) {
-                    updateScore(500);
-                    angryGuy.hitPoints = angryGuy.maxHitPoints;
-                    angryGuy.rage = 0;
-                    showPowerUpNotification('ANGRY GUY DEFEATED! 🏆');
-                }
-                clickedSomething = true;
             }
-            
-            // Check buildings
-            buildings.forEach(building => {
-                if (x >= building.x && x <= building.x + building.width && 
-                    y >= building.y && y <= building.y + building.height) {
-                    building.health--;
-                    updateScore(25);
-                    updateCombo();
-                    createExplosion(x, y, 20);
-                    
-                    if (building.health <= 0) {
-                        building.health = 3;
-                        updateScore(200);
-                        showPowerUpNotification('BUILDING DESTROYED! 💥');
-                    }
-                    clickedSomething = true;
-                }
-            });
-            
-            // Check clouds
-            clouds.forEach(cloud => {
-                if (x >= cloud.x && x <= cloud.x + cloud.width && 
-                    y >= cloud.y - cloud.height/2 && y <= cloud.y + cloud.height/2) {
-                    updateScore(cloud.points);
-                    updateCombo();
-                    createExplosion(x, y, 12);
-                    cloud.x = -cloud.width - 50; // Reset cloud position
-                    clickedSomething = true;
-                }
-            });
-            
-            // If nothing was clicked, just create explosion
-            if (!clickedSomething) {
-                createExplosion(x, y, 10);
-            }
-        });
-
-        // Main game loop
+        }
+        
         function gameLoop() {
-            time++;
-            
-            // Update game state
-            updateTimer();
-            if (gameTimer <= 0) return;
-            
-            // Update combo timer
-            comboTimer--;
-            if (comboTimer <= 0 && combo > 0) {
-                resetCombo();
-            }
-            
-            // Apply screen shake
-            if (screenShake > 0) {
-                ctx.save();
-                ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
-                screenShake--;
-            }
+            if (!gameRunning) return;
             
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw everything
-            drawSky();
-            drawClouds();
-            drawBuildings();
-            drawAngryGuy();
+            // Draw game
+            drawGrid();
             
             // Update and draw game objects
-            spawnFlyingObject();
-            spawnPowerUp();
+            player.update();
+            player.draw();
             
-            flyingObjects = flyingObjects.filter(obj => obj.update());
-            powerUps = powerUps.filter(powerUp => powerUp.update());
+            bombs = bombs.filter(bomb => bomb.update());
+            bombs.forEach(bomb => bomb.draw());
             
-            drawFlyingObjects();
-            drawPowerUps();
-            drawParticles();
-            drawSoundEffects();
-            drawRandomEmojis();
+            explosions = explosions.filter(explosion => explosion.update());
+            explosions.forEach(explosion => explosion.draw());
             
-            // Restore screen shake
-            if (screenShake >= 0) {
-                ctx.restore();
-            }
+            enemies.forEach(enemy => enemy.update());
+            enemies.filter(enemy => enemy.alive).forEach(enemy => enemy.draw());
             
-            // Continue animation
-            animationId = requestAnimationFrame(gameLoop);
-        }
-
-        // Start the game
-        gameLoop();
-
-        // Resize canvas for mobile
-        function resizeCanvas() {
-            if (window.innerWidth < 768) {
-                canvas.width = window.innerWidth * 0.9;
-                canvas.height = window.innerHeight * 0.6;
-            }
+            powerUps.forEach(powerUp => powerUp.update());
+            powerUps.forEach(powerUp => powerUp.draw());
+            
+            particles = particles.filter(particle => particle.update());
+            particles.forEach(particle => particle.draw());
+            
+            requestAnimationFrame(gameLoop);
         }
         
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            keysPressed[e.code] = true;
+            
+            if (e.code === 'Space') {
+                e.preventDefault();
+                placeBomb();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keysPressed[e.code] = false;
+        });
+        
+        // Initialize and start game
+        initGame();
+        gameLoop();
+        
+        // Make restartGame global
+        window.restartGame = restartGame;
     </script>
 </body>
-</html> 
 </html> 
