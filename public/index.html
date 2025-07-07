@@ -604,13 +604,20 @@
                 
                 this.moveTimer++;
                 
-                // Simple AI movement
-                if (this.moveTimer > 60) {
+                // Improved AI movement with more variation
+                if (this.moveTimer > Math.random() * 40 + 30) { // Random movement timing
                     this.moveTimer = 0;
                     
-                    // Try to move in current direction, otherwise pick random
+                    // Sometimes change direction randomly even if current path is clear
+                    if (Math.random() < 0.3) {
+                        this.direction = Math.floor(Math.random() * 4);
+                    }
+                    
+                    // Try to move, with multiple attempts if blocked
                     let attempts = 0;
-                    while (attempts < 4) {
+                    let moved = false;
+                    
+                    while (attempts < 8 && !moved) {
                         const directions = [
                             { dx: 0, dy: -1 }, // Up
                             { dx: 0, dy: 1 },  // Down
@@ -625,17 +632,49 @@
                         // Check if position is valid (empty and no bombs)
                         const isBombAt = bombs.some(bomb => bomb.gridX === newGridX && bomb.gridY === newGridY);
                         
+                        // Add some bomb avoidance - check for nearby bombs
+                        let dangerNearby = false;
+                        for (let bomb of bombs) {
+                            const bombDistance = Math.abs(bomb.gridX - newGridX) + Math.abs(bomb.gridY - newGridY);
+                            if (bombDistance <= 2 && bomb.timer < 90) { // Avoid bombs that will explode soon
+                                dangerNearby = true;
+                                break;
+                            }
+                        }
+                        
                         if (newGridX >= 0 && newGridX < GRID_WIDTH && 
                             newGridY >= 0 && newGridY < GRID_HEIGHT && 
-                            grid[newGridY][newGridX] === 0 && !isBombAt) {
+                            grid[newGridY][newGridX] === 0 && !isBombAt && !dangerNearby) {
                             
                             this.gridX = newGridX;
                             this.gridY = newGridY;
                             this.targetX = this.gridX * TILE_SIZE + TILE_SIZE / 2;
                             this.targetY = this.gridY * TILE_SIZE + TILE_SIZE / 2;
-                            break;
+                            moved = true;
                         } else {
-                            this.direction = Math.floor(Math.random() * 4);
+                            // If blocked or dangerous, try a different direction
+                            // Prefer directions away from the player for more challenging gameplay
+                            if (attempts < 4) {
+                                const playerDistance = Math.abs(player.gridX - this.gridX) + Math.abs(player.gridY - this.gridY);
+                                if (playerDistance < 5) {
+                                    // Try to move away from player
+                                    const awayFromPlayerDirections = [];
+                                    if (player.gridX > this.gridX) awayFromPlayerDirections.push(2); // Left
+                                    if (player.gridX < this.gridX) awayFromPlayerDirections.push(3); // Right
+                                    if (player.gridY > this.gridY) awayFromPlayerDirections.push(0); // Up
+                                    if (player.gridY < this.gridY) awayFromPlayerDirections.push(1); // Down
+                                    
+                                    if (awayFromPlayerDirections.length > 0) {
+                                        this.direction = awayFromPlayerDirections[Math.floor(Math.random() * awayFromPlayerDirections.length)];
+                                    } else {
+                                        this.direction = Math.floor(Math.random() * 4);
+                                    }
+                                } else {
+                                    this.direction = Math.floor(Math.random() * 4);
+                                }
+                            } else {
+                                this.direction = Math.floor(Math.random() * 4);
+                            }
                             attempts++;
                         }
                     }
